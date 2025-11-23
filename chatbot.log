@@ -1,0 +1,134 @@
+2025-11-23 14:54:54 | ERROR    | NVIDIA_API_KEY not found!
+2025-11-23 14:57:09 | INFO     | Starting server...
+2025-11-23 14:57:09 | INFO     | Starting server...
+2025-11-23 14:57:09 | INFO     | Initializing Chatbot Brain...
+2025-11-23 14:57:09 | INFO     | AI Model loaded!
+2025-11-23 14:57:09 | INFO     | Loaded 4 tools!
+2025-11-23 14:57:09 | INFO     | SessionManager started - Ready for multiple users!
+2025-11-23 14:57:09 | INFO     | Memory manager ready!
+2025-11-23 14:57:09 | ERROR    | Failed: Prompt missing required variables: {'tool_names', 'tools'}
+2025-11-23 14:57:27 | INFO     | Starting server...
+2025-11-23 14:57:27 | INFO     | Starting server...
+2025-11-23 14:57:27 | INFO     | Initializing Chatbot Brain...
+2025-11-23 14:57:27 | INFO     | AI Model loaded!
+2025-11-23 14:57:27 | INFO     | Loaded 4 tools!
+2025-11-23 14:57:27 | INFO     | SessionManager started - Ready for multiple users!
+2025-11-23 14:57:27 | INFO     | Memory manager ready!
+2025-11-23 14:57:27 | ERROR    | Failed: Prompt missing required variables: {'tool_names', 'tools'}
+2025-11-23 14:58:49 | INFO     | Starting server...
+2025-11-23 14:58:49 | INFO     | Starting server...
+2025-11-23 14:58:49 | INFO     | Initializing Chatbot Brain...
+2025-11-23 14:58:49 | INFO     | AI Model loaded!
+2025-11-23 14:58:49 | INFO     | Loaded 4 tools!
+2025-11-23 14:58:49 | INFO     | SessionManager started - Ready for multiple users!
+2025-11-23 14:58:49 | INFO     | Memory manager ready!
+2025-11-23 14:58:49 | INFO     | Agent brain initialized!
+2025-11-23 14:58:49 | INFO     | Server ready!
+2025-11-23 14:59:30 | INFO     | Starting server...
+2025-11-23 14:59:30 | INFO     | Starting server...
+2025-11-23 14:59:30 | INFO     | Initializing Chatbot Brain...
+2025-11-23 14:59:30 | INFO     | AI Model loaded!
+2025-11-23 14:59:30 | INFO     | Loaded 4 tools!
+2025-11-23 14:59:30 | INFO     | SessionManager started - Ready for multiple users!
+2025-11-23 14:59:30 | INFO     | Memory manager ready!
+2025-11-23 14:59:30 | INFO     | Agent brain initialized!
+2025-11-23 14:59:30 | INFO     | Server ready!
+2025-11-23 15:11:05 | INFO     | Message from user_123
+2025-11-23 15:11:05 | INFO     | Processing: I'm feeling happy today!...
+2025-11-23 15:11:05 | INFO     | Memory created - Ready to remember conversations!
+2025-11-23 15:11:05 | INFO     | New session created for: user_123
+2025-11-23 15:11:05 | ERROR    | Error: variable agent_scratchpad should be a list of base messages, got  of type <class 'str'>
+2025-11-23 15:13:01 | INFO     | Starting server...
+2025-11-23 15:13:01 | INFO     | Starting server...
+2025-11-23 15:13:01 | INFO     | Initializing Chatbot Brain...
+2025-11-23 15:13:01 | INFO     | AI Model loaded!
+2025-11-23 15:13:01 | INFO     | Loaded 4 tools!
+2025-11-23 15:13:01 | INFO     | SessionManager started - Ready for multiple users!
+2025-11-23 15:13:01 | INFO     | Memory manager ready!
+2025-11-23 15:13:01 | INFO     | Agent brain initialized!
+2025-11-23 15:13:01 | INFO     | Server ready!
+2025-11-23 15:14:29 | INFO     | Message from user_123
+2025-11-23 15:14:29 | INFO     | Processing: I'm feeling happy today!...
+2025-11-23 15:14:29 | INFO     | Memory created - Ready to remember conversations!
+2025-11-23 15:14:29 | INFO     | New session created for: user_123
+2025-11-23 15:14:31 | INFO     | 🎉 Positive tool activated!
+2025-11-23 15:14:32 | INFO     | Saved message #1
+2025-11-23 15:14:32 | INFO     | Saved interaction for user_123 (used: unknown)
+2025-11-23 15:14:32 | INFO     | Tool used: unknown
+2025-11-23 15:18:21 | INFO     | Message from user_123
+2025-11-23 15:18:21 | INFO     | Processing: I'm feeling happy today!...
+2025-11-23 15:18:23 | INFO     | 🎉 Positive tool activated!
+2025-11-23 15:18:24 | INFO     | Saved message #2
+2025-11-23 15:18:24 | INFO     | Saved interaction for user_123 (used: unknown)
+2025-11-23 15:18:24 | INFO     | Tool used: unknown
+2025-11-23 15:20:03 | INFO     | Starting server...
+2025-11-23 15:20:03 | INFO     | Starting server...
+2025-11-23 15:20:03 | INFO     | Initializing Chatbot Brain...
+2025-11-23 15:20:03 | INFO     | AI Model loaded!
+2025-11-23 15:20:03 | INFO     | Loaded 4 tools!
+2025-11-23 15:20:03 | INFO     | SessionManager started - Ready for multiple users!
+2025-11-23 15:20:03 | INFO     | Memory manager ready!
+2025-11-23 15:20:03 | INFO     | Agent brain initialized!
+2025-11-23 15:20:03 | INFO     | Server ready!
+2025-11-23 15:20:54 | INFO     | Message from test_user
+2025-11-23 15:20:54 | INFO     | Processing: I'm feeling happy!...
+2025-11-23 15:20:54 | INFO     | Memory created - Ready to remember conversations!
+2025-11-23 15:20:54 | INFO     | New session created for: test_user
+2025-11-23 15:20:55 | INFO     | 🎉 Positive tool activated!
+2025-11-23 15:20:56 | INFO     | Detected tool from intermediate_steps: positive_tool
+2025-11-23 15:20:56 | INFO     | Saved message #1
+2025-11-23 15:20:56 | INFO     | Saved interaction for test_user (used: positive_tool)
+2025-11-23 15:20:56 | INFO     | Final tool used: positive_tool
+2025-11-23 15:32:50 | INFO     | Starting server...
+2025-11-23 15:32:50 | INFO     | Starting server...
+2025-11-23 15:32:50 | INFO     | Initializing Chatbot Brain...
+2025-11-23 15:32:50 | INFO     | AI Model loaded!
+2025-11-23 15:32:50 | INFO     | Loaded 4 tools!
+2025-11-23 15:32:50 | INFO     | SessionManager started - Ready for multiple users!
+2025-11-23 15:32:50 | INFO     | Memory manager ready!
+2025-11-23 15:32:50 | INFO     | Agent brain initialized!
+2025-11-23 15:32:50 | INFO     | Server ready!
+2025-11-23 15:33:03 | INFO     | Starting server...
+2025-11-23 15:33:03 | INFO     | Starting server...
+2025-11-23 15:33:03 | INFO     | Initializing Chatbot Brain...
+2025-11-23 15:33:03 | INFO     | AI Model loaded!
+2025-11-23 15:33:03 | INFO     | Loaded 4 tools!
+2025-11-23 15:33:03 | INFO     | SessionManager started - Ready for multiple users!
+2025-11-23 15:33:03 | INFO     | Memory manager ready!
+2025-11-23 15:33:03 | INFO     | Agent brain initialized!
+2025-11-23 15:33:03 | INFO     | Server ready!
+2025-11-23 15:34:12 | INFO     | Message from user_123
+2025-11-23 15:34:12 | INFO     | Processing: Show me Sarah's grades...
+2025-11-23 15:34:12 | INFO     | Memory created - Ready to remember conversations!
+2025-11-23 15:34:12 | INFO     | New session created for: user_123
+2025-11-23 15:34:14 | INFO     | 📚 Student marks tool activated for: Sarah
+
+2025-11-23 15:34:16 | INFO     | Detected tool from intermediate_steps: student_marks_tool
+2025-11-23 15:34:16 | INFO     | Saved message #1
+2025-11-23 15:34:16 | INFO     | Saved interaction for user_123 (used: student_marks_tool)
+2025-11-23 15:34:16 | INFO     | Final tool used: student_marks_tool
+2025-11-23 15:34:41 | INFO     | Starting server...
+2025-11-23 15:34:41 | INFO     | Starting server...
+2025-11-23 15:34:41 | INFO     | Initializing Chatbot Brain...
+2025-11-23 15:34:41 | INFO     | AI Model loaded!
+2025-11-23 15:34:41 | INFO     | Loaded 4 tools!
+2025-11-23 15:34:41 | INFO     | SessionManager started - Ready for multiple users!
+2025-11-23 15:34:41 | INFO     | Memory manager ready!
+2025-11-23 15:34:41 | INFO     | Agent brain initialized!
+2025-11-23 15:34:41 | INFO     | Server ready!
+2025-11-23 15:35:00 | INFO     | Message from user_123
+2025-11-23 15:35:00 | INFO     | Processing: What are John's marks?...
+2025-11-23 15:35:00 | INFO     | Memory created - Ready to remember conversations!
+2025-11-23 15:35:00 | INFO     | New session created for: user_123
+2025-11-23 15:35:01 | INFO     | 📚 Student marks tool activated for: John
+2025-11-23 15:35:03 | INFO     | Detected tool from intermediate_steps: student_marks_tool
+2025-11-23 15:35:03 | INFO     | Saved message #1
+2025-11-23 15:35:03 | INFO     | Saved interaction for user_123 (used: student_marks_tool)
+2025-11-23 15:35:03 | INFO     | Final tool used: student_marks_tool
+2025-11-23 15:35:19 | INFO     | Message from user_123
+2025-11-23 15:35:19 | INFO     | Processing: Show me Sarah's grades...
+2025-11-23 15:35:20 | INFO     | 📚 Student marks tool activated for: Sarah
+2025-11-23 15:35:22 | INFO     | Detected tool from intermediate_steps: student_marks_tool
+2025-11-23 15:35:22 | INFO     | Saved message #2
+2025-11-23 15:35:22 | INFO     | Saved interaction for user_123 (used: student_marks_tool)
+2025-11-23 15:35:22 | INFO     | Final tool used: student_marks_tool
