@@ -1,157 +1,124 @@
 """
-memory.py - LangChain-based Conversation Memory Manager
+memory.py - LangChain Memory Implementation
 """
 
-import logging
-from typing import List, Dict
-from datetime import datetime
 from langchain.memory import ConversationBufferMemory
-from langchain.schema import HumanMessage, AIMessage
+from langchain_anthropic import ChatAnthropic
+from langchain.chains import ConversationChain
+from langchain.prompts import PromptTemplate
+import os
 
-logger = logging.getLogger(__name__)
+
+class ChatMemory:
+    """Chat memory manager using LangChain ConversationBufferMemory"""
+    
+    def __init__(self, api_key: str = None):
+        """Initialize chat with LangChain memory"""
+        
+        # Set API key
+        self.api_key = api_key or os.environ.get("ANTHROPIC_API_KEY")
+        
+        # Initialize Claude LLM
+        self.llm = ChatAnthropic(
+            model="claude-sonnet-4-20250514",
+            anthropic_api_key=self.api_key,
+            max_tokens=1000,
+            temperature=0.7
+        )
+        
+        # Create LangChain ConversationBufferMemory
+        self.memory = ConversationBufferMemory(
+            memory_key="chat_history",
+            return_messages=True,
+            output_key="response"
+        )
+        
+        # Create conversation chain with memory
+        self.conversation = ConversationChain(
+            llm=self.llm,
+            memory=self.memory,
+            verbose=True
+        )
+    
+    def chat(self, user_input: str) -> str:
+        """
+        Send message and get response with memory
+        
+        Args:
+            user_input: User's message
+            
+        Returns:
+            AI response string
+        """
+        response = self.conversation.predict(input=user_input)
+        return response
+    
+    def get_chat_history(self) -> str:
+        """
+        Get full conversation history from memory
+        
+        Returns:
+            Formatted chat history string
+        """
+        return self.memory.load_memory_variables({})["chat_history"]
+    
+    def clear_memory(self):
+        """Clear all conversation history from memory"""
+        self.memory.clear()
+    
+    def save_context(self, user_input: str, ai_response: str):
+        """
+        Manually save a conversation turn to memory
+        
+        Args:
+            user_input: User's message
+            ai_response: AI's response
+        """
+        self.memory.save_context(
+            {"input": user_input},
+            {"response": ai_response}
+        )
+    
+    def get_memory_size(self) -> int:
+        """Get number of messages in memory"""
+        history = self.memory.load_memory_variables({})
+        messages = history.get("chat_history", [])
+        return len(messages)
 
 
-class SessionManager:
-    """Manages multiple user sessions with LangChain memory"""
-
-    def __init__(self):
-        self.sessions: Dict[str, Dict] = {}
-        logger.info("SessionManager initialized (LangChain-based)")
-
-    def get_or_create_session(self, thread_id: str) -> Dict:
-        """Get existing session or create a new one"""
-        if thread_id not in self.sessions:
-            self.sessions[thread_id] = {
-                "memory": ConversationBufferMemory(return_messages=True),
-                "tools_used": {},
-                "tools_history": [],  # Track tool per human message
-                "created_at": datetime.now().isoformat(),
-                "last_active": datetime.now().isoformat(),
-                "thread_id": thread_id
-            }
-            logger.info(f"New session created: {thread_id}")
-        return self.sessions[thread_id]
-
-    def save_interaction(self, thread_id: str, user_msg: str, bot_response: str, tool_name: str):
-        """Save a conversation exchange for a specific session"""
-        session = self.get_or_create_session(thread_id)
-        memory: ConversationBufferMemory = session["memory"]
-
-        # Save interaction using LangChain memory
-        memory.save_context({"input": user_msg}, {"output": bot_response})
-
-        # Update tool usage count
-        session["tools_used"][tool_name] = session["tools_used"].get(tool_name, 0) + 1
-
-        # Append tool to tools_history
-        session["tools_history"].append(tool_name)
-
-        # Update last active timestamp
-        session["last_active"] = datetime.now().isoformat()
-
-        logger.info(f"Interaction saved: {thread_id} | Tool used: {tool_name}")
-
-    def get_history(self, thread_id: str) -> str:
-        """Return conversation history as formatted string"""
-        session = self.get_or_create_session(thread_id)
-        memory: ConversationBufferMemory = session["memory"]
-        messages = memory.load_memory_variables({}).get("history", [])
-
-        lines = []
-        for msg in messages:
-            if isinstance(msg, HumanMessage):
-                lines.append(f"Human: {msg.content}")
-            elif isinstance(msg, AIMessage):
-                lines.append(f"AI: {msg.content}")
-        return "\n".join(lines)
-
-    def get_recent_messages(self, thread_id: str, limit: int = 5) -> List[Dict]:
-        """Return last N messages with type info"""
-        session = self.get_or_create_session(thread_id)
-        memory: ConversationBufferMemory = session["memory"]
-        messages = memory.load_memory_variables({}).get("history", [])
-
-        recent = messages[-limit:] if limit else messages
-        result = []
-        for idx, msg in enumerate(recent, 1):
-            result.append({
-                "message_id": idx,
-                "type": "human" if isinstance(msg, HumanMessage) else "ai",
-                "content": msg.content
-            })
-        return result
-
-    def get_detailed_history(self, thread_id: str) -> dict:
-        """Return complete conversation history with paired human + AI messages"""
-        session = self.get_or_create_session(thread_id)
-        memory: ConversationBufferMemory = session["memory"]
-        messages = memory.load_memory_variables({}).get("history", [])
-        tools_history = session.get("tools_history", [])
-
-        conv_list = []
-        human_index = 0
-        idx = 1
-
-        while human_index < len(tools_history):
-            # Get human message
-            human_msg = None
-            ai_msg = None
-            for msg in messages:
-                if isinstance(msg, HumanMessage):
-                    human_msg = msg.content
-                    messages.remove(msg)
-                    break
-
-            # Get next AI response
-            for msg in messages:
-                if isinstance(msg, AIMessage):
-                    ai_msg = msg.content
-                    messages.remove(msg)
-                    break
-
-            tool_used = tools_history[human_index] if human_index < len(tools_history) else "unknown"
-
-            conv_list.append({
-                "message_id": idx,
-                "user_query": human_msg or "",
-                "bot_response": ai_msg or "",
-                "tool_used": tool_used,
-                "session_id": thread_id,
-                "timestamp": datetime.now().isoformat()
-            })
-            idx += 1
-            human_index += 1
-
-        return {
-            "thread_id": thread_id,
-            "session_id": thread_id,
-            "total_messages": len(conv_list),
-            "conversation": conv_list,
-            "created_at": session["created_at"],
-            "last_active": session["last_active"]
-        }
-
-    def get_stats(self, thread_id: str) -> Dict:
-        """Get session statistics"""
-        session = self.get_or_create_session(thread_id)
-        memory: ConversationBufferMemory = session["memory"]
-        messages = memory.load_memory_variables({}).get("history", [])
-        return {
-            "thread_id": thread_id,
-            "message_count": len(messages),
-            "tools_used": session["tools_used"],
-            "created_at": session["created_at"],
-            "last_active": session["last_active"]
-        }
-
-    def clear_session(self, thread_id: str) -> bool:
-        """Clear all memory for a session"""
-        if thread_id in self.sessions:
-            del self.sessions[thread_id]
-            logger.info(f"Session cleared: {thread_id}")
-            return True
-        return False
-
-    def list_all_sessions(self) -> List[str]:
-        """List all active sessions"""
-        return list(self.sessions.keys())
+# Example usage
+if __name__ == "__main__":
+    # Initialize chat with memory
+    chat = ChatMemory()
+    
+    # Conversation 1
+    print("User: Hi, my name is John")
+    response1 = chat.chat("Hi, my name is John")
+    print(f"AI: {response1}\n")
+    
+    # Conversation 2 (memory remembers name)
+    print("User: What's my name?")
+    response2 = chat.chat("What's my name?")
+    print(f"AI: {response2}\n")
+    
+    # Conversation 3
+    print("User: I like Python programming")
+    response3 = chat.chat("I like Python programming")
+    print(f"AI: {response3}\n")
+    
+    # Conversation 4 (memory remembers both name and interest)
+    print("User: What do I like and what's my name?")
+    response4 = chat.chat("What do I like and what's my name?")
+    print(f"AI: {response4}\n")
+    
+    # Show memory stats
+    print(f"Total messages in memory: {chat.get_memory_size()}")
+    
+    # View full history
+    print("\n--- Full Chat History ---")
+    print(chat.get_chat_history())
+    
+    # Clear memory
+    print("\n--- Clearing Memory ---")
+    chat.clear_memory()
+    print(f"Messages after clear: {chat.get_memory_size()}")
