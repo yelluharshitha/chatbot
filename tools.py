@@ -1,8 +1,5 @@
 """
 tools.py - The Chatbot's Tools
-================================
-These are like different abilities your chatbot has.
-Each tool does ONE specific thing.
 """
 
 from langchain.tools import tool
@@ -14,7 +11,7 @@ logger = logging.getLogger(__name__)
 @tool
 def positive_tool(query: str) -> str:
     """This tool handles HAPPY and POSITIVE messages. When someone says I'm happy or motivate me, this tool responds."""
-    logger.info("Positive tool activated!")
+    logger.info(" Positive tool activated!")
     
     query_lower = query.lower()
     
@@ -22,7 +19,7 @@ def positive_tool(query: str) -> str:
         return " That's wonderful! Keep that positive energy going! Your happiness is inspiring!"
     
     elif "motivat" in query_lower or "inspire" in query_lower:
-        return " You've got this! Every small step counts. Keep pushing forward - you're stronger than you think!"
+        return "You've got this! Every small step counts. Keep pushing forward - you're stronger than you think!"
     
     else:
         return " Stay positive! You're doing amazing. Keep that great attitude!"
@@ -31,16 +28,16 @@ def positive_tool(query: str) -> str:
 @tool
 def negative_tool(query: str) -> str:
     """This tool handles SAD and NEGATIVE emotions. When someone says I'm sad or I feel down, this tool responds with empathy."""
-    logger.info("Negative/empathy tool activated!")
+    logger.info(" Negative/empathy tool activated!")
     
     return """I hear you, and your feelings are completely valid. 
 
 Remember:
-• It's okay to not be okay sometimes
-• This difficult moment will pass
-• You've overcome challenges before, and you can do it again
-• Small steps are still progress
-• Take care of yourself today
+- It's okay to not be okay sometimes
+- This difficult moment will pass
+- You've overcome challenges before, and you can do it again
+- Small steps are still progress
+- Take care of yourself today
 
 Tomorrow is a new day with new possibilities. """
 
@@ -48,9 +45,8 @@ Tomorrow is a new day with new possibilities. """
 @tool
 def student_marks_tool(student_name: str) -> str:
     """This tool looks up STUDENT GRADES. When someone asks What are John's marks, this tool finds the answer. Available students: John, Sarah, Mike, Bob."""
-    logger.info(f"📚 Student marks tool activated for: {student_name}")
+    logger.info(f"Student marks tool activated for: {student_name}")
     
-    # Our fake student database (in real world, this would connect to a real database)
     students = {
         "john": {
             "Math": 85,
@@ -82,22 +78,18 @@ def student_marks_tool(student_name: str) -> str:
         }
     }
     
-    # Find the student (case insensitive)
     name = student_name.lower().strip()
     
-    # Check if name contains any of our students
     for student in students.keys():
         if student in name:
             name = student
             break
     
-    # Get the student's data
     if name not in students:
-        return f" Student '{student_name}' not found.\n\nAvailable students: John, Sarah, Mike, Bob"
+        return f"Student '{student_name}' not found.\n\nAvailable students: John, Sarah, Mike, Bob"
     
     marks = students[name]
     
-    # Format the output nicely
     result = f"\n Academic Report for {name.title()}\n"
     result += "=" * 45 + "\n\n"
     
@@ -118,12 +110,12 @@ def crisis_tool(query: str) -> str:
     logger.warning(" CRISIS TOOL ACTIVATED - Someone may need help!")
     
     return """
- IMMEDIATE CRISIS SUPPORT RESOURCES
+🆘 IMMEDIATE CRISIS SUPPORT RESOURCES
 ==========================================
 
 If you're in crisis, please reach out RIGHT NOW:
 
- EMERGENCY HELPLINES:
+📞 EMERGENCY HELPLINES:
   • 988 (US) - Suicide & Crisis Lifeline
     Available 24/7 - Call or Text
   
@@ -132,10 +124,10 @@ If you're in crisis, please reach out RIGHT NOW:
   
   • 911 - For immediate emergency
 
- INTERNATIONAL:
+🌍 INTERNATIONAL:
   Visit: https://www.iasp.info/resources/Crisis_Centres/
 
- YOU ARE NOT ALONE
+💙 YOU ARE NOT ALONE
 Your life has value. Help is available RIGHT NOW.
 
 Please reach out to:
@@ -149,7 +141,6 @@ This feeling is temporary. Help is available. You matter.
 """
 
 
-# List of all tools (we'll use this in agent.py)
 ALL_TOOLS = [
     positive_tool,
     negative_tool,
