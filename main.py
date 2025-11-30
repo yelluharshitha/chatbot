@@ -1,67 +1,20 @@
 """
-main.py - FastAPI Server with History Tracking
+main.py - FastAPI Backend using memory.py
+Install: pip install fastapi uvicorn langchain langchain-anthropic python-dotenv
+Run: uvicorn main:app --reload
 """
 
-import logging
-import sys
-import os
-from datetime import datetime
-from typing import List
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import uvicorn
-from dotenv import load_dotenv
-from agent import ChatbotAgent
+from typing import Dict
+import uuid
+import os
+from memory import ChatMemory
 
-# Logging setup
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s | %(levelname)-8s | %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-    handlers=[
-        logging.StreamHandler(sys.stdout),
-        logging.FileHandler("chatbot.log", mode="a", encoding="utf-8")
-    ]
-)
-logger = logging.getLogger(__name__)
+app = FastAPI()
 
-# Load environment variables
-load_dotenv()
-NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY")
-
-if not NVIDIA_API_KEY:
-    logger.error("NVIDIA_API_KEY not found in .env file!")
-    sys.exit(1)
-
-# Pydantic Models
-class ChatRequest(BaseModel):
-    message: str
-    thread_id: str = "default"
-
-class ChatResponse(BaseModel):
-    success: bool
-    response: str
-    tool_used: str
-    message_count: int
-    thread_id: str
-    timestamp: str
-
-class DetailedHistoryResponse(BaseModel):
-    thread_id: str
-    session_id: str
-    total_messages: int
-    conversation: List[dict]
-    created_at: str
-    last_active: str
-
-# FastAPI App
-app = FastAPI(
-    title="AI Chatbot with History Tracking",
-    description="Tool-calling chatbot that remembers conversations",
-    version="2.0.0"
-)
-
+# Enable CORS for React frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -70,163 +23,165 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-chatbot = None
+# Store ChatMemory instances per session
+sessions: Dict[str, ChatMemory] = {}
 
-@app.on_event("startup")
-async def startup_event():
-    global chatbot
-    logger.info(" Starting server...")
-    try:
-        chatbot = ChatbotAgent(NVIDIA_API_KEY)
-        logger.info("Server ready!")
-        print("\n" + "="*60)
-        print("SERVER IS RUNNING!")
-        print("="*60)
-        print(" URL: http://localhost:8000")
-        print(" Docs: http://localhost:8000/docs")
-        print("="*60 + "\n")
-    except Exception as e:
-        logger.error(f" Failed: {e}")
-        raise
+class ChatRequest(BaseModel):
+    message: str
+    session_id: str = None
 
-# API Endpoints
+class ChatResponse(BaseModel):
+    response: str
+    session_id: str
+    memory_size: int
 
-@app.get("/", tags=["General"])
-def home():
-    """API Home"""
+class ClearMemoryRequest(BaseModel):
+    session_id: str
+
+class HistoryResponse(BaseModel):
+    session_id: str
+    history: str
+    message_count: int
+
+
+@app.get("/")
+async def root():
     return {
-        "message": "AI Chatbot API with Complete History Tracking",
-        "version": "2.0.0",
-        "status": "online",
-        "features": {
-            "history_tracking": {
-                "user_query": "✓",
-                "bot_response": "✓",
-                "tool_used": "✓",
-                "session_id": "✓",
-                "timestamp": "✓"
-            }
-        },
-        "docs": "http://localhost:8000/docs"
+        "message": "LangChain Memory API Running",
+        "endpoints": {
+            "/chat": "POST - Send message",
+            "/clear": "POST - Clear memory",
+            "/history/{session_id}": "GET - Get chat history"
+        }
     }
 
 
-@app.get("/health", tags=["General"])
-def health_check():
-    """Health Check"""
-    return {
-        "status": "healthy",
-        "timestamp": datetime.now().isoformat(),
-        "active_sessions": len(chatbot.list_sessions()) if chatbot else 0
-    }
-
-
-@app.post("/chat", response_model=ChatResponse, tags=["Chat"])
-def chat_endpoint(request: ChatRequest):
+@app.post("/chat", response_model=ChatResponse)
+async def chat(request: ChatRequest):
     """
-    Send message to chatbot
-    
-    Tracks:
-    - User query
-    - Bot response
-    - Tool used
-    - Session ID
-    - Timestamp
+    Send a message and get AI response with memory
     """
-    if not chatbot:
-        raise HTTPException(status_code=503, detail="Chatbot not initialized")
-    
-    logger.info(f" Message from {request.thread_id}")
-    
     try:
-        result = chatbot.chat(request.message, request.thread_id)
+        # Get or create session
+        session_id = request.session_id or str(uuid.uuid4())
+        
+        # Create new ChatMemory if session doesn't exist
+        if session_id not in sessions:
+            api_key = os.environ.get("ANTHROPIC_API_KEY")
+            if not api_key:
+                raise HTTPException(
+                    status_code=500, 
+                    detail="ANTHROPIC_API_KEY not found in environment"
+                )
+            sessions[session_id] = ChatMemory(api_key=api_key)
+        
+        # Get chat instance
+        chat = sessions[session_id]
+        
+        # Get response using LangChain memory
+        response = chat.chat(request.message)
+        
+        # Get memory size
+        memory_size = chat.get_memory_size()
         
         return ChatResponse(
-            success=result["success"],
-            response=result["response"],
-            tool_used=result["tool_used"],
-            message_count=result["message_count"],
-            thread_id=result["thread_id"],
-            timestamp=datetime.now().isoformat()
+            response=response,
+            session_id=session_id,
+            memory_size=memory_size
         )
+    
     except Exception as e:
-        logger.error(f" Error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/history/{thread_id}", tags=["History"])
-def get_history(thread_id: str):
-    """Get simple text history"""
-    if not chatbot:
-        raise HTTPException(status_code=503)
-    
-    history = chatbot.get_history(thread_id)
-    return {
-        "thread_id": thread_id,
-        "history": history
-    }
-
-
-@app.get("/history/{thread_id}/detailed", response_model=DetailedHistoryResponse, tags=["History"])
-def get_detailed_history(thread_id: str):
+@app.post("/clear")
+async def clear_memory(request: ClearMemoryRequest):
     """
-    Get complete history with ALL metadata:
-    - User query
-    - Bot response
-    - Tool used
-    - Session ID
-    - Timestamp
-    
-    Perfect for analytics and debugging!
+    Clear conversation memory for a session
     """
-    if not chatbot:
-        raise HTTPException(status_code=503)
-    
-    logger.info(f" Fetching detailed history for: {thread_id}")
-    
     try:
-        detailed = chatbot.get_detailed_history(thread_id)
-        return DetailedHistoryResponse(**detailed)
+        session_id = request.session_id
+        
+        if session_id in sessions:
+            # Clear memory using LangChain method
+            sessions[session_id].clear_memory()
+            return {
+                "message": "Memory cleared successfully",
+                "session_id": session_id
+            }
+        else:
+            return {
+                "message": "Session not found",
+                "session_id": session_id
+            }
+    
     except Exception as e:
-        logger.error(f" Error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/stats/{thread_id}", tags=["Statistics"])
-def get_stats(thread_id: str):
-    """Get session statistics"""
-    if not chatbot:
-        raise HTTPException(status_code=503)
+@app.get("/history/{session_id}", response_model=HistoryResponse)
+async def get_history(session_id: str):
+    """
+    Get full conversation history for a session
+    """
+    try:
+        if session_id not in sessions:
+            raise HTTPException(
+                status_code=404, 
+                detail="Session not found"
+            )
+        
+        chat = sessions[session_id]
+        
+        # Get history from LangChain memory
+        history = chat.get_chat_history()
+        message_count = chat.get_memory_size()
+        
+        return HistoryResponse(
+            session_id=session_id,
+            history=str(history),
+            message_count=message_count
+        )
     
-    return chatbot.get_stats(thread_id)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/sessions", tags=["Sessions"])
-def list_sessions():
-    """List all active sessions"""
-    if not chatbot:
-        raise HTTPException(status_code=503)
+@app.delete("/session/{session_id}")
+async def delete_session(session_id: str):
+    """
+    Delete entire session
+    """
+    if session_id in sessions:
+        del sessions[session_id]
+        return {
+            "message": "Session deleted successfully",
+            "session_id": session_id
+        }
+    else:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+
+@app.get("/sessions")
+async def list_sessions():
+    """
+    List all active sessions
+    """
+    session_info = []
+    for session_id, chat in sessions.items():
+        session_info.append({
+            "session_id": session_id,
+            "message_count": chat.get_memory_size()
+        })
     
-    sessions = chatbot.list_sessions()
     return {
         "total_sessions": len(sessions),
-        "session_ids": sessions
+        "sessions": session_info
     }
-
-
-@app.delete("/clear/{thread_id}", tags=["Sessions"])
-def clear_session(thread_id: str):
-    """Clear session history"""
-    if not chatbot:
-        raise HTTPException(status_code=503)
-    
-    success = chatbot.clear_session(thread_id)
-    if success:
-        return {"message": f"Session {thread_id} cleared", "success": True}
-    
-    raise HTTPException(status_code=404, detail="Session not found")
 
 
 if __name__ == "__main__":
-    logger.info("Starting server...")
-    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
